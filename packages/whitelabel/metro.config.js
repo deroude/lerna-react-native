@@ -10,22 +10,21 @@ const fs = require("fs");
 const metroResolver = require('metro-resolver').resolve;
 
 const searchPaths = [
-  { path: path.resolve(__dirname, 'lib'), prefix: './lib/' }
+  path.resolve(__dirname, 'lib')
 ];
 
 module.exports = {
   projectRoot: path.resolve(__dirname),
-  watchFolders: [...searchPaths.map(p => p.path), path.resolve(__dirname, '../../node_modules')],
+  watchFolders: [...searchPaths, path.resolve(__dirname, '../../node_modules')],
   resolver: {
     resolveRequest: (context, realModuleName, platform) => {
       if (realModuleName.startsWith('@app')) {
         const moduleName = realModuleName.replace('@app/', '');
         for (let candidate of searchPaths) {
-          const realPath = path.resolve(candidate.path, moduleName);
+          const realPath = path.resolve(candidate, moduleName);
           if (fs.existsSync(realPath)) {
-            const localPath = candidate.prefix + moduleName;
-            console.log(`\n\nResolved ${realModuleName} to ${localPath}`);
-            return metroResolver({ ...context, resolveRequest: null }, localPath, platform);
+            console.log(`\n\nResolved ${realModuleName} to ${realPath}`);
+            return metroResolver({ ...context, resolveRequest: null }, realPath, platform);
           }
         }
       }
